@@ -17,6 +17,7 @@ Extended to support file server!
 #include <netinet/in.h>
 #include "iknlib.h"
 
+using namespace std;
 // #define STRBUFSIZE 256
 class ServerSocket
 {
