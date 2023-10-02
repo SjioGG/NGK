@@ -81,11 +81,30 @@ public:
 
 	void receiveFile()
 	{
-		char buffer[4096] = {};
-		int valread = read(generalSocketDescriptor, buffer, 4096);
-		printf("Receiving, size: %d\n", valread);
-		file << buffer;
+		char buffer[4096];
+		int bytesRead;
+		int totalBytesReceived = 0;
+
+		while ((bytesRead = read(generalSocketDescriptor, buffer, sizeof(buffer))) > 0)
+		{
+			file.write(buffer, bytesRead);
+			totalBytesReceived += bytesRead;
+
+			// Print progress every 1000 bytes
+			if (totalBytesReceived % 1000 == 0)
+			{
+				printf("Received %d bytes\n", totalBytesReceived);
+			}
+		}
+
+		if (bytesRead < 0)
+		{
+			perror("ERROR reading from socket");
+			exit(1);
+		}
+
 		printf("File received\n");
+		file.close();
 	}
 };
 

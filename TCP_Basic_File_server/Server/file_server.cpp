@@ -104,17 +104,43 @@ public:
 
 	void sendFile()
 	{
-		std::string contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-		printf("Transmission Data : %s Bytes", contents.c_str());
-		if (send(newSocketDescriptor, contents.c_str(), contents.length(), 0) < 0)
+		char buffer[1024]; // Buffer to read and send file in chunks
+		int totalBytesSent = 0;
+		int chunkNumber = 0;
+
+		while (!file.eof())
 		{
-			perror("Error: File not sent");
-			exit(1);
+			// Read a chunk of data from the file
+			file.read(buffer, sizeof(buffer));
+			int bytesRead = file.gcount();
+
+			if (bytesRead <= 0)
+			{
+				break; // End of file
+			}
+
+			// Send the chunk over the socket
+			if (send(newSocketDescriptor, buffer, bytesRead, 0) < 0)
+			{
+				perror("Error: File not sent");
+				exit(1);
+			}
+
+			totalBytesSent += bytesRead;
+			chunkNumber++;
+
+			// Print progress every 1000 bytes
+			if (chunkNumber % 1000 == 0)
+			{
+				printf("Sent %d bytes\n", totalBytesSent);
+			}
 		}
-		else
-		{
-			printf("File sent\n");
-		}
+
+		// Close the file
+		file.close();
+
+		// Close the socket
+		close(newSocketDescriptor);
 	}
 };
 
