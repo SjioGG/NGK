@@ -81,8 +81,8 @@ public:
 
 	void receiveFile()
 	{
-		char buffer[1024] = {};
-		int valread = read(generalSocketDescriptor, buffer, 1024);
+		char buffer[4096] = {};
+		int valread = read(generalSocketDescriptor, buffer, 4096);
 		printf("Receiving, size: %d\n", valread);
 		file << buffer;
 		printf("File received\n");
