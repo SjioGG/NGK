@@ -39,7 +39,7 @@ public:
 		serverAddress.sin_family = AF_INET;
 		serverAddress.sin_port = htons(port);
 		addressLength = sizeof(serverAddress);
-		if (inet_pton(AF_INET, serverAddress, &serverAddress.sin_addr) <= 0)
+		if (inet_pton(AF_INET, serverAddress.sin_addr, &serverAddress.sin_addr) <= 0)
 		{
 			perror("ERROR: Invalid address");
 			exit(1);
@@ -72,7 +72,7 @@ public:
 	void connectToServer()
 	{
 		addressLength = sizeof(serverAddress);
-		if (connect(generalSocketDescriptor, (struct sockaddr *)&serverAddress, adressLength) < 0)
+		if (connect(generalSocketDescriptor, (struct sockaddr *)&serverAddress, addressLength) < 0)
 		{
 			perror("ERROR connecting");
 			exit(1);
@@ -84,7 +84,7 @@ public:
 	{
 		char buffer[1024] = {};
 		int valread = read(generalSocketDescriptor, buffer, 1024);
-		printf("Receiving, size: %d\n" valread);
+		printf("Receiving, size: %d\n", valread);
 		file << buffer;
 		printf("File received\n");
 	}
