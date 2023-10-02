@@ -32,16 +32,16 @@ public:
 	{
 		createSocket(); // implement it
 		port = 9000;
-		address.sin_family = AF_INET;		  // IPv4
-		address.sin_addr.s_addr = INADDR_ANY; // any address
-		address.sin_port = htons(port);		  // host to network short
-		adressLength = sizeof(ServerAddress); // set length of address
+		serverAddress.sin_family = AF_INET;			// IPv4
+		serverAddress.sin_addr.s_addr = INADDR_ANY; // any address
+		serverAddress.sin_port = htons(port);		// host to network short
+		adressLength = sizeof(serverAddress);		// set length of address
 
 		bindSocket();
 		listenSocket();
 		acceptSocket();
 
-		file.open(".//datatosend//FILENAME", ios::in | ios::binary); // probably shorten this down, either one or the other
+		file.open(".//datatosend//img.jpg", ios::in | ios::binary); // probably shorten this down, either one or the other
 		if (!file.is_open())
 		{
 			perror("Error: File not opened");

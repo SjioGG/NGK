@@ -15,6 +15,9 @@ Extended to support file client!
 #include <sys/socket.h>
 #include <netdb.h>
 #include "iknlib.h"
+#include <arpa/inet.h>
+
+using namespace std;
 
 // #define STRBUFSIZE 256
 class ClientSocket
@@ -23,15 +26,36 @@ class ClientSocket
 	int port;
 	int generalSocketDescriptor;
 	struct sockaddr_in serverAddress;
-	int adressLength;
+	int addressLength;
+	string fileName;
 
 public:
-	ClientSocket(int port, struct sockaddr_in serverAddress, fstream file)
+	ClientSocket(struct sockaddr_in serverAddress, std::string fileName)
 	{
 		createSocket();
-		this->port = port;
+		port = 9000;
 		this->serverAddress = serverAddress;
-		this->file = file;
+		this->fileName = fileName;
+		serverAddress.sin_family = AF_INET;
+		serverAddress.sin_port = htons(port);
+		addressLength = sizeof(serverAddress);
+		if (inet_pton(AF_INET, serverAddress, &serverAddress.sin_addr) <= 0)
+		{
+			perror("ERROR: Invalid address");
+			exit(1)
+		}
+
+		connectToServer();
+		file.open(".//datarecive//" fileName, ios::out | ios::trunc | ios::binary);
+		if (file.is_open())
+		{
+			printf("File opened\n");
+		}
+		else
+		{
+			perror("ERROR: File not opened");
+			exit(1);
+		}
 	}
 
 	void createSocket()
@@ -39,8 +63,10 @@ public:
 		generalSocketDescriptor = socket(AF_INET, SOCK_STREAM, 0);
 		if (generalSocketDescriptor < 0)
 		{
-			error("ERROR opening socket");
+			perror("ERROR opening socket");
+			exit(1);
 		}
+		printf("Socket created\n");
 	}
 
 	void connectToServer()
@@ -48,29 +74,26 @@ public:
 		adressLength = sizeof(serverAddress);
 		if (connect(generalSocketDescriptor, (struct sockaddr *)&serverAddress, adressLength) < 0)
 		{
-			error("ERROR connecting");
+			perror("ERROR connecting");
+			exit(1);
 		}
+		printf("Connected to server!\n");
 	}
 
-	void receiveFile(int serverSocket, const char *fileName, long fileSize)
+	void receiveFile()
 	{
-		printf("Receiving: '%s', size: %li\n", fileName, fileSize);
+		char buffer[1024] = {};
+		int valread = read(generalSocketDescriptor, buffer, 1024);
+		printf("Receiving: '%s', size: %d\n", fileName, valread);
+		file << buffer;
+		printf("File received\n");
 	}
-}
+};
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	printf("Starting client...\n");
-	ClientSocket clientSocket(arg...);
-	if (argc < 3)
-	{
-		error("ERROR usage: "
-			  "hostname"
-			  ",  "
-			  "filename"
-			  "\n");
-	}
-
+	ClientSocket clientSocket(argv[1], argv[2]);
+	clientSocket.receiveFile();
 	return 0;
 }
