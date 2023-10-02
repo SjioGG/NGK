@@ -30,16 +30,15 @@ class ClientSocket
 	string fileName;
 
 public:
-	ClientSocket(const char *serverAddress, std::string fileName)
+	ClientSocket(const char *ipStr, std::string fileName)
 	{
 		createSocket();
 		port = 9000;
-		this->serverAddress = serverAddress;
 		this->fileName = fileName;
 		serverAddress.sin_family = AF_INET;
 		serverAddress.sin_port = htons(port);
 		addressLength = sizeof(serverAddress);
-		if (inet_pton(AF_INET, serverAddress, &serverAddress.sin_addr) <= 0)
+		if (inet_pton(AF_INET, ipStr, &serverAddress.sin_addr) <= 0)
 		{
 			perror("ERROR: Invalid address");
 			exit(1);
