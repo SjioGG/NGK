@@ -71,7 +71,7 @@ public:
 
 	void connectToServer()
 	{
-		adressLength = sizeof(serverAddress);
+		addressLength = sizeof(serverAddress);
 		if (connect(generalSocketDescriptor, (struct sockaddr *)&serverAddress, adressLength) < 0)
 		{
 			perror("ERROR connecting");
@@ -84,13 +84,13 @@ public:
 	{
 		char buffer[1024] = {};
 		int valread = read(generalSocketDescriptor, buffer, 1024);
-		printf("Receiving: '%s', size: %d\n", fileName, valread);
+		printf("Receiving, size: %d\n" valread);
 		file << buffer;
 		printf("File received\n");
 	}
 };
 
-int main(int argc, char *argv[])
+int main(string argv[])
 {
 	printf("Starting client...\n");
 	ClientSocket clientSocket(argv[1], argv[2]);
