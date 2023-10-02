@@ -30,7 +30,7 @@ class ClientSocket
 	string fileName;
 
 public:
-	ClientSocket(struct sockaddr_in serverAddress, std::string fileName)
+	ClientSocket(const char *serverAddress, std::string fileName)
 	{
 		createSocket();
 		port = 9000;
@@ -39,7 +39,7 @@ public:
 		serverAddress.sin_family = AF_INET;
 		serverAddress.sin_port = htons(port);
 		addressLength = sizeof(serverAddress);
-		if (inet_pton(AF_INET, serverAddress.sin_addr, &serverAddress.sin_addr) <= 0)
+		if (inet_pton(AF_INET, serverAddress, &serverAddress.sin_addr) <= 0)
 		{
 			perror("ERROR: Invalid address");
 			exit(1);
@@ -100,18 +100,12 @@ int main(int argc, char *argv[])
 
 	const char *ipStr = argv[1];
 	const char *filename = argv[2];
-	struct sockaddr_in serverAddress;
 
 	// Convert the IP address from string to binary form and store it in serverAddress
-	if (inet_pton(AF_INET, ipStr, &(serverAddress.sin_addr)) <= 0)
-	{
-		std::cerr << "Invalid IP address: " << ipStr << std::endl;
-		return 1;
-	}
 
 	std::cout << "Starting client with IP address: " << ipStr << " and filename: " << filename << std::endl;
 	// Now you can use the 'serverAddress' struct and 'filename' to create the ClientSocket.
-	ClientSocket clientSocket(serverAddress, filename);
+	ClientSocket clientSocket(ipStr, filename);
 	clientSocket.receiveFile();
 
 	return 0;
