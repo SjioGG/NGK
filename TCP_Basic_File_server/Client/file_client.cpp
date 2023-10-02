@@ -90,10 +90,29 @@ public:
 	}
 };
 
-int main(string argv[])
+int main(int argc, char *argv[])
 {
-	printf("Starting client...\n");
-	ClientSocket clientSocket(argv[1], argv[2]);
+	if (argc != 3)
+	{
+		std::cerr << "Usage: " << argv[0] << " <IP address> <filename>" << std::endl;
+		return 1;
+	}
+
+	const char *ipStr = argv[1];
+	const char *filename = argv[2];
+	struct sockaddr_in serverAddress;
+
+	// Convert the IP address from string to binary form and store it in serverAddress
+	if (inet_pton(AF_INET, ipStr, &(serverAddress.sin_addr)) <= 0)
+	{
+		std::cerr << "Invalid IP address: " << ipStr << std::endl;
+		return 1;
+	}
+
+	std::cout << "Starting client with IP address: " << ipStr << " and filename: " << filename << std::endl;
+	// Now you can use the 'serverAddress' struct and 'filename' to create the ClientSocket.
+	ClientSocket clientSocket(serverAddress, filename);
 	clientSocket.receiveFile();
+
 	return 0;
 }
