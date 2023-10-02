@@ -42,11 +42,11 @@ public:
 		if (inet_pton(AF_INET, serverAddress, &serverAddress.sin_addr) <= 0)
 		{
 			perror("ERROR: Invalid address");
-			exit(1)
+			exit(1);
 		}
 
 		connectToServer();
-		file.open(".//datarecive//" fileName, ios::out | ios::trunc | ios::binary);
+		file.open((".//datarecive//") + fileName, ios::out | ios::trunc | ios::binary);
 		if (file.is_open())
 		{
 			printf("File opened\n");
