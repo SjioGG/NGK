@@ -18,11 +18,11 @@
 /**
  * Read a null terminated text stream from a socket
  *
- * @param inSocket socket stream 
+ * @param inSocket socket stream
  * @param maxlength Maximun number of chars for string
- * @param text pointer for char array to hold received text 
+ * @param text pointer for char array to hold received text
  */
-void readTextTCP(int inSocket, char* text, int maxLength)
+void readTextTCP(int inSocket, char *text, int maxLength)
 {
     char ch = 0;
     int pos = 0;
@@ -44,17 +44,17 @@ void readTextTCP(int inSocket, char* text, int maxLength)
     text[pos] = 0; // Null-terminate the received string
 }
 
-
-
 /**
  * Writes a null terminated text stream to a socket
  *
  * @param outSocket socket stream
  * @param text Null terminated text to be sent
  */
-void writeTextTCP(int outSocket, const char* text)
+void writeTextTCP(int outSocket, const char *text)
 {
-    write(outSocket, text, strlen(text)+1);
+    write(outSocket, text, strlen(text) + 1);
+    char nullChar = 0;
+    write(outSocket, &nullChar, 1); // Send null termination
 }
 
 /**
@@ -76,10 +76,10 @@ long readFileSizeTCP(int inSocket)
  * @param text text holding filename and path
  * @return Only filename
  */
-const char* extractFileName(const char* text)
+const char *extractFileName(const char *text)
 {
-    char* ecn;
-    return ((ecn = (char *)strrchr(text,'/'))==0 ? text : ++ecn);
+    char *ecn;
+    return ((ecn = (char *)strrchr(text, '/')) == 0 ? text : ++ecn);
 }
 
 /**
@@ -88,10 +88,10 @@ const char* extractFileName(const char* text)
  * @param fileName Name of file to test
  * @return Size of file, 0 if file does not exist
  */
-long getFilesize(const char* fileName)
+long getFilesize(const char *fileName)
 {
     struct stat sts;
-    if ((stat (fileName, &sts)) == -1)
+    if ((stat(fileName, &sts)) == -1)
         return 0;
 
     return sts.st_size;
