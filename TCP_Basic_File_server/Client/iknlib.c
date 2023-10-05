@@ -46,8 +46,11 @@ void readTextTCP(int inSocket, char* text, int maxLength )
  */
 void writeTextTCP(int outSocket, const char* text)
 {
-    write(outSocket, text, strlen(text)+1);
+    write(outSocket, text, strlen(text));
+    char nullChar = 0;
+    write(outSocket, &nullChar, 1); // Send null termination
 }
+
 
 /**
  * Reads a string holding filesize from a socket, and converts to a number

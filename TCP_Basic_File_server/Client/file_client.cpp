@@ -45,6 +45,9 @@ public:
 		}
 
 		connectToServer();
+
+		sendFilenameToServer();
+
 		file.open((".//datarecive//") + fileName, ios::out | ios::trunc | ios::binary);
 		if (file.is_open())
 		{
@@ -79,32 +82,41 @@ public:
 		printf("Connected to server!\n");
 	}
 
+	void sendFilenameToServer()
+    {
+        // Send the filename to the server
+        writeTextTCP(generalSocketDescriptor, fileName.c_str());
+    }
+
 	void receiveFile()
 	{
-		char buffer[4096];
-		int bytesRead;
-		int totalBytesReceived = 0;
+    	char buffer[1000];
+    	int bytesRead;
+    	int totalBytesReceived = 0;
+    	int bytesInInterval = 0;
 
-		while ((bytesRead = read(generalSocketDescriptor, buffer, sizeof(buffer))) > 0)
-		{
-			file.write(buffer, bytesRead);
-			totalBytesReceived += bytesRead;
+    	while ((bytesRead = read(generalSocketDescriptor, buffer, sizeof(buffer))) > 0)
+    	{
+        	file.write(buffer, bytesRead);
+        	totalBytesReceived += bytesRead;
+        	bytesInInterval += bytesRead;
 
-			// Print progress every 1000 bytes
-			if (totalBytesReceived % 1000 == 0)
-			{
-				printf("Received %d bytes\n", totalBytesReceived);
-			}
-		}
+        	if (bytesInInterval >= 1000)
+        	{
+            	printf("Received %d bytes\n", totalBytesReceived);
+            	bytesInInterval = 0; // Reset the interval count
+        	}
+    	}
 
-		if (bytesRead < 0)
-		{
-			perror("ERROR reading from socket");
-			exit(1);
-		}
-
-		printf("File received\n");
-		file.close();
+    	if (bytesRead < 0)
+    	{
+        	perror("ERROR reading from socket");
+        	exit(1);
+    	}
+		
+		printf("Received %d bytes\n", totalBytesReceived); // Print the final progress
+ 		printf("File received\n");
+    	file.close();
 	}
 };
 
