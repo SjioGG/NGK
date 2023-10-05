@@ -84,41 +84,47 @@ public:
 
 	void acceptSocket()
 	{
-		if ((newSocketDescriptor = accept(generalSocketDescriptor, (struct sockaddr *)&serverAddress, (socklen_t *)&adressLength)) < 0)
-		{
-			perror("Error: Socket not accepted");
-			exit(1);
-		}
-		else
-		{
-			printf("Socket accepted\n");
-		}
+    	if ((newSocketDescriptor = accept(generalSocketDescriptor, (struct sockaddr *)&serverAddress, (socklen_t *)&adressLength)) < 0)
+    	{
+        	perror("Error: Socket not accepted");
+        	exit(1);
+    	}
+    	else
+    	{
+        	printf("Socket accepted\n");
+    	}
 
-		char filenameBuffer[256]; // Adjust the buffer size as needed
-		readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
-		printf("Received filename: %s\n", filenameBuffer);
+    	char filename[256]; // Adjust the buffer size as needed
+    	readTextTCP(newSocketDescriptor, filename, sizeof(filename));
+    	printf("Received filename: %s\n", filename);
 
-		std::string filename(filenameBuffer);
+ 		// Now, you have the filename in the `filename` variable.
+    	// You can open the corresponding file for sending.
+		
+		// Send "File available" response to indicate the file exists
+        writeTextTCP(newSocketDescriptor, "File available");
+    	file.open((".//datatosend//") + string(filename), ios::out | ios::trunc | ios::binary);
 
-		// Now, you have the filename in the `filename` string.
-
-		// Open the corresponding file for sending based on the received filename.
-		file.open(".//datatosend//" + filename, ios::in | ios::binary);
-
-		if (!file.is_open())
-		{
-			perror("Error: File not opened");
-			exit(1);
-		}
-		else
-		{
-			printf("File opened\n");
-		}
+    	if (!file.is_open())
+    	{
+        	perror("Error: File not opened");
+        	exit(1);
+    	}
+    	else
+    	{
+        	printf("File opened\n");
+    	}
+	}
+	
+	bool fileExists(const std::string& filename) 
+	{
+    	std::ifstream file(filename.c_str());
+    	return file.good(); // Returns true if the file exists and can be opened
 	}
 
 	void sendFile()
 	{
-		char buffer[1024]; // Buffer to read and send file in chunks
+		char buffer[1000]; // Buffer to read and send file in chunks
 		int totalBytesSent = 0;
 		int bytesInInterval = 0;
 
@@ -151,12 +157,8 @@ public:
 			}
 		}
 
-		// Close the file
 		file.close();
-
-		// Close the socket
 		close(newSocketDescriptor);
-
 		printf("Sent %d bytes\n", totalBytesSent); // Print the final progress
 	}
 };
@@ -164,7 +166,10 @@ public:
 int main(int argc, char *argv[]) // probs remove those args
 {
 	printf("Starting server...\n");
-	ServerSocket server;
-	server.sendFile();
+	while (true)
+	{
+		ServerSocket server;
+		server.sendFile();
+	}
 	return 0;
 }
