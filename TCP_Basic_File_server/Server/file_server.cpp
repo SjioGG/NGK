@@ -41,18 +41,8 @@ public:
 		bindSocket();
 		listenSocket();
 		acceptSocket();
-
-		file.open(".//datatosend//img.jpg", ios::in | ios::binary); // probably shorten this down, either one or the other
-		if (!file.is_open())
-		{
-			perror("Error: File not opened");
-			exit(1);
-		}
-		else
-		{
-			printf("File opened\n");
-		}
 	}
+
 	void createSocket()
 	{
 		if ((generalSocketDescriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -65,6 +55,7 @@ public:
 			printf("Socket created\n");
 		}
 	}
+
 	void bindSocket()
 	{
 		if (bind(generalSocketDescriptor, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0)
@@ -77,6 +68,7 @@ public:
 			printf("Socket binded\n");
 		}
 	}
+
 	void listenSocket()
 	{
 		if (listen(generalSocketDescriptor, 5) < 0)
@@ -89,7 +81,43 @@ public:
 			printf("Socket listening\n");
 		}
 	}
+
 	void acceptSocket()
+	{
+    	if ((newSocketDescriptor = accept(generalSocketDescriptor, (struct sockaddr *)&serverAddress, (socklen_t *)&adressLength)) < 0)
+    	{
+        	perror("Error: Socket not accepted");
+        	exit(1);
+    	}
+    	else
+    	{
+        	printf("Socket accepted\n");
+    	}
+
+    	char filenameBuffer[256]; // Adjust the buffer size as needed
+    	readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
+    	printf("Received filename: %s\n", filenameBuffer);
+
+    	std::string filename(filenameBuffer);
+
+    	// Now, you have the filename in the `filename` string.
+    
+    	// Open the corresponding file for sending based on the received filename.
+    	file.open(".//datatosend//" + filename, ios::in | ios::binary);
+
+    	if (!file.is_open())
+    	{
+        	perror("Error: File not opened");
+        	exit(1);
+    	}
+    	else
+    	{
+        	printf("File opened\n");
+    	}
+	}
+
+
+	/* void acceptSocket() OG CODE
 	{
 		if ((newSocketDescriptor = accept(generalSocketDescriptor, (struct sockaddr *)&serverAddress, (socklen_t *)&adressLength)) < 0)
 		{
@@ -100,7 +128,7 @@ public:
 		{
 			printf("Socket accepted\n");
 		}
-	}
+	} */ 
 
 	void sendFile()
 	{
