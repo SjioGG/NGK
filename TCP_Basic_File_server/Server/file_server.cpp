@@ -9,7 +9,7 @@ Extended to support file server!
 #include <stdio.h>
 #include <iostream>
 #include <stdlib.h>
-#include <string.h>
+// #include <string.h>
 #include <fstream>
 #include <unistd.h>
 #include <sys/types.h>
@@ -94,13 +94,26 @@ public:
 			printf("Socket accepted\n");
 		}
 
-		char filenameBuffer[256]; // Adjust the buffer size as needed
+		char filenameBuffer[256]; // Adjust the buffer size as needed. this should be fine
 		readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
 		printf("Received filename: %s\n", filenameBuffer);
 
-		std::string filename(filenameBuffer);
+		std::string filename(filenameBuffer); // Convert the filename to a string
 
-		// Now, you have the filename in the `filename` string.
+		// Check if the file exists
+		if (!fileExists(".//datatosend//" + filename))
+		{
+			printf("File not found: %s\n", filename.c_str());
+
+			// Send a failure message back to the client
+			const char *failureMessage = "File not found";
+			writeTextTCP(newSocketDescriptor, failureMessage);
+
+			// Close the socket
+			close(newSocketDescriptor);
+
+			return; // Exit the function without proceeding to send the file
+		}
 
 		// Open the corresponding file for sending based on the received filename.
 		file.open(".//datatosend//" + filename, ios::in | ios::binary);
@@ -151,12 +164,8 @@ public:
 			}
 		}
 
-		// Close the file
 		file.close();
-
-		// Close the socket
 		close(newSocketDescriptor);
-
 		printf("Sent %d bytes\n", totalBytesSent); // Print the final progress
 	}
 };
@@ -164,7 +173,10 @@ public:
 int main(int argc, char *argv[]) // probs remove those args
 {
 	printf("Starting server...\n");
-	ServerSocket server;
-	server.sendFile();
+	while (true)
+	{
+		ServerSocket server;
+		server.sendFile();
+	}
 	return 0;
 }
