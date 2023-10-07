@@ -27,15 +27,21 @@ void readTextTCP(int inSocket, char *text, int maxLength)
     char ch = 0;
     int pos = 0;
 
-    read(inSocket, &ch, 1);
-
-    while (ch != 0)
+    while (pos < maxLength - 1)
     {
-        if (pos < maxLength)
-            text[pos++] = ch;
-        read(inSocket, &ch, 1);
+        if (read(inSocket, &ch, 1) < 0)
+        {
+            perror("Error reading from socket");
+            exit(1);
+        }
+
+        if (ch == 0)
+            break;
+
+        text[pos++] = ch;
     }
-    text[pos] = 0; // insert null termination
+
+    text[pos] = 0; // Null-terminate the received string
 }
 
 /**
