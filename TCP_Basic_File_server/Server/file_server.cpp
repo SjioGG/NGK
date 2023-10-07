@@ -84,6 +84,41 @@ public:
 
 	void acceptSocket()
 	{
+    	if ((newSocketDescriptor = accept(generalSocketDescriptor, (struct sockaddr *)&serverAddress, (socklen_t *)&adressLength)) < 0)
+    	{
+        	perror("Error: Socket not accepted");
+        	exit(1);
+    	}
+    	else
+    	{
+        	printf("Socket accepted\n");
+    	}
+
+    	char filenameBuffer[256]; // Adjust the buffer size as needed
+    	readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
+    	printf("Received filename: %s\n", filenameBuffer);
+
+    	std::string filename(filenameBuffer);
+
+    	// Now, you have the filename in the `filename` string.
+    
+    	// Open the corresponding file for sending based on the received filename.
+    	file.open(".//datatosend//" + filename, ios::in | ios::binary);
+
+    	if (!file.is_open())
+    	{
+        	perror("Error: File not opened");
+        	exit(1);
+    	}
+    	else
+    	{
+        	printf("File opened\n");
+    	}
+	}
+
+
+	/* void acceptSocket() OG CODE
+	{
 		if ((newSocketDescriptor = accept(generalSocketDescriptor, (struct sockaddr *)&serverAddress, (socklen_t *)&adressLength)) < 0)
 		{
 			perror("Error: Socket not accepted");
@@ -93,34 +128,13 @@ public:
 		{
 			printf("Socket accepted\n");
 		}
-
-		char filenameBuffer[256]; // Adjust the buffer size as needed
-		readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
-		printf("Received filename: %s\n", filenameBuffer);
-
-		std::string filename(filenameBuffer);
-
-		// Now, you have the filename in the `filename` string.
-
-		// Open the corresponding file for sending based on the received filename.
-		file.open(".//datatosend//" + filename, ios::in | ios::binary);
-
-		if (!file.is_open())
-		{
-			perror("Error: File not opened");
-			exit(1);
-		}
-		else
-		{
-			printf("File opened\n");
-		}
-	}
+	} */ 
 
 	void sendFile()
 	{
 		char buffer[1024]; // Buffer to read and send file in chunks
 		int totalBytesSent = 0;
-		int bytesInInterval = 0;
+		int chunkNumber = 0;
 
 		while (!file.eof())
 		{
@@ -141,13 +155,12 @@ public:
 			}
 
 			totalBytesSent += bytesRead;
-			bytesInInterval += bytesRead;
+			chunkNumber++;
 
 			// Print progress every 1000 bytes
-			if (bytesInInterval >= 1000)
+			if (chunkNumber % 1000 == 0)
 			{
 				printf("Sent %d bytes\n", totalBytesSent);
-				bytesInInterval = 0; // Reset the interval count
 			}
 		}
 
@@ -156,8 +169,6 @@ public:
 
 		// Close the socket
 		close(newSocketDescriptor);
-
-		printf("Sent %d bytes\n", totalBytesSent); // Print the final progress
 	}
 };
 
