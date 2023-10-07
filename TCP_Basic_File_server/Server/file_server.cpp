@@ -108,12 +108,15 @@ public:
     	if (!file.is_open())
     	{
         	perror("Error: File not opened");
+			string failed = "Requested file does not exist";
+			//writeTextTCP(newSocketDescriptor, failed.c_str());
         	exit(1);
     	}
     	else
     	{
         	printf("File opened\n");
     	}
+		//readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
 	}
 
 
@@ -130,47 +133,60 @@ public:
 		}
 	} */ 
 
-	void sendFile()
-	{
-		char buffer[1024]; // Buffer to read and send file in chunks
-		int totalBytesSent = 0;
-		int chunkNumber = 0;
+void sendFile()
+{
+    // Calculate the size of the file
+    file.seekg(0, ios::end);
+    int fileSize = file.tellg();
+    file.seekg(0, ios::beg);
 
-		while (!file.eof())
-		{
-			// Read a chunk of data from the file
-			file.read(buffer, sizeof(buffer));
-			int bytesRead = file.gcount();
+    // Send the file size to the server
+    int fileSizeNetworkOrder = htonl(fileSize);
+    if (send(newSocketDescriptor, &fileSizeNetworkOrder, sizeof(fileSizeNetworkOrder), 0) < 0)
+    {
+        perror("Error: File size not sent");
+        exit(1);
+    }
 
-			if (bytesRead <= 0)
-			{
-				break; // End of file
-			}
+    char buffer[1000]; // Buffer to read and send file in chunks
+    int totalBytesSent = 0;
+    int chunkNumber = 0;
+    int bytesInInterval = 0;
+    int bytesRead;
 
-			// Send the chunk over the socket
-			if (send(newSocketDescriptor, buffer, bytesRead, 0) < 0)
-			{
-				perror("Error: File not sent");
-				exit(1);
-			}
+    while ((bytesRead = file.read(buffer, sizeof(buffer)).gcount()) > 0)
+    {
+        // Send the chunk over the socket
+        if (send(newSocketDescriptor, buffer, bytesRead, 0) < 0)
+        {
+            perror("Error: File not sent");
+            exit(1);
+        }
 
-			totalBytesSent += bytesRead;
-			chunkNumber++;
+        totalBytesSent += bytesRead;
+        chunkNumber++;
+        bytesInInterval += bytesRead;
 
-			// Print progress every 1000 bytes
-			if (chunkNumber % 1000 == 0)
-			{
-				printf("Sent %d bytes\n", totalBytesSent);
-			}
-		}
+        // Print progress every 1000 bytes
+        if (bytesInInterval >= 1000)
+        {
+            printf("Sent %d bytes (%.2f%%)\n", totalBytesSent, (static_cast<double>(totalBytesSent) / fileSize) * 100);
+            bytesInInterval = 0; // Reset the interval count
+        }
+    }
 
-		// Close the file
-		file.close();
+    // Close the file
+    file.close();
 
-		// Close the socket
-		close(newSocketDescriptor);
-	}
+    // Close the socket
+    close(newSocketDescriptor);
+
+    printf("Sent %d bytes (100.00%%)\n", totalBytesSent); // Print the final progress
+}
+
+
 };
+
 
 int main(int argc, char *argv[]) // probs remove those args
 {
