@@ -108,12 +108,15 @@ public:
     	if (!file.is_open())
     	{
         	perror("Error: File not opened");
-			string failed = "Requested file does not exist";
-			//writeTextTCP(newSocketDescriptor, failed.c_str());
+			//char failed[256] = "Requested file does not exist";
+			//writeTextTCP(newSocketDescriptor, failed);
         	exit(1);
     	}
     	else
     	{
+			// attampt with iknlib :
+			//char notfailed[256] = "shit good";
+			//writeTextTCP(newSocketDescriptor, notfailed);
         	printf("File opened\n");
     	}
 		//readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
@@ -140,7 +143,7 @@ void sendFile()
     int fileSize = file.tellg();
     file.seekg(0, ios::beg);
 
-    // Send the file size to the server
+    // Send the file size to the client
     int fileSizeNetworkOrder = htonl(fileSize);
     if (send(newSocketDescriptor, &fileSizeNetworkOrder, sizeof(fileSizeNetworkOrder), 0) < 0)
     {
