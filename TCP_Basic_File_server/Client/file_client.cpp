@@ -88,50 +88,64 @@ public:
     	// Send the filename to the server as a request
     	writeTextTCP(generalSocketDescriptor, fileName.c_str());
 
-    	// Receive a response from the server
-    	char response[256];
-    	readTextTCP(generalSocketDescriptor, response, sizeof(response));
-
-		// Check the response to see if the file is available
-    	if (strcmp(response, "File available") != 0)
-    	{
-        	printf("File not available or unexpected response from server: %s\n", response);
-        	exit(1);
-    	}
-
+    	// // Receive a response from the server
+    	// char response[256];
+    	// readTextTCP(generalSocketDescriptor, response, sizeof(response));
+		// // Check the response to see if the file is available
+		// string failed = "Requested file does not exist";
+    	// if (strcmp(response, failed.c_str()) == 0)
+    	// {
+        // 	printf("File not available or unexpected response from server: %s\n", response);
+        // 	exit(1);
+    	// }
+		//writeTextTCP(generalSocketDescriptor, fileName.c_str());
 	}
 
+void receiveFile()
+{
+    // Receive the file size from the client
+    int fileSizeNetworkOrder;
+    if (recv(generalSocketDescriptor, &fileSizeNetworkOrder, sizeof(fileSizeNetworkOrder), 0) < 0)
+    {
+        perror("Error: File size not received");
+        exit(1);
+    }
+    int fileSize = ntohl(fileSizeNetworkOrder);
 
-	void receiveFile()
-	{
-		char buffer[1000];
-		int bytesRead;
-		int totalBytesReceived = 0;
-		int bytesInInterval = 0;
+    char buffer[1000];
+    int totalBytesReceived = 0;
+    int bytesInInterval = 0;
+    int bytesRead;
 
-		while ((bytesRead = read(generalSocketDescriptor, buffer, sizeof(buffer))) > 0)
-		{
-			file.write(buffer, bytesRead);
-			totalBytesReceived += bytesRead;
-			bytesInInterval += bytesRead;
+    while (totalBytesReceived < fileSize)
+    {
+        bytesRead = recv(generalSocketDescriptor, buffer, sizeof(buffer), 0);
 
-			if (bytesInInterval >= 1000)
-			{
-				printf("Received %d bytes\n", totalBytesReceived);
-				bytesInInterval = 0; // Reset the interval count
-			}
-		}
+        if (bytesRead < 0)
+        {
+            perror("ERROR reading from socket");
+            exit(1);
+        }
 
-		if (bytesRead < 0)
-		{
-			perror("ERROR reading from socket");
-			exit(1);
-		}
+        // Write to the file
+        file.write(buffer, bytesRead);
 
-		printf("Received %d bytes\n", totalBytesReceived); // Print the final progress
-		printf("File received\n");
-		file.close();
-	}
+        totalBytesReceived += bytesRead;
+        bytesInInterval += bytesRead;
+
+        // Print progress every 1000 bytes
+        if (bytesInInterval >= 1000)
+        {
+            printf("Received %d bytes (%.2f%%)\n", totalBytesReceived, (static_cast<double>(totalBytesReceived) / fileSize) * 100);
+            bytesInInterval = 0; // Reset the interval count
+        }
+    }
+
+    printf("Received %d bytes (100.00%%)\n", totalBytesReceived); // Print the final progress
+    file.close();
+    close(generalSocketDescriptor);
+}
+
 };
 
 int main(int argc, char *argv[])
