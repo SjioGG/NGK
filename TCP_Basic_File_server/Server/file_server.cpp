@@ -108,18 +108,22 @@ public:
     	if (!file.is_open())
     	{
         	perror("Error: File not opened");
-			//char failed[256] = "Requested file does not exist";
+			char failed[256] = "Requested file does not exist";
 			//writeTextTCP(newSocketDescriptor, failed);
         	exit(1);
+			send(newSocketDescriptor, failed, sizeof(failed), 0);
     	}
     	else
     	{
 			// attampt with iknlib :
-			//char notfailed[256] = "shit good";
+			char notfailed[256] = "shit good";
 			//writeTextTCP(newSocketDescriptor, notfailed);
+			send(newSocketDescriptor, notfailed, sizeof(notfailed), 0);
         	printf("File opened\n");
     	}
 		//readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
+
+		sleep(0.29);
 	}
 
 
@@ -193,8 +197,13 @@ void sendFile()
 
 int main(int argc, char *argv[]) // probs remove those args
 {
-	printf("Starting server...\n");
-	ServerSocket server;
-	server.sendFile();
+	while(1)
+	{
+		printf("Starting server...\n");
+		ServerSocket server;
+		server.sendFile();
+		printf("Server will sleep and wait for port to update it's state to OPEN...\n");
+		sleep(90);
+	}
 	return 0;
 }
