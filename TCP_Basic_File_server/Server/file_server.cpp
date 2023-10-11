@@ -31,16 +31,11 @@ class ServerSocket
 public:
 	ServerSocket()
 	{
-		createSocket(); // implement it
 		port = 9000;
 		serverAddress.sin_family = AF_INET;			// IPv4
 		serverAddress.sin_addr.s_addr = INADDR_ANY; // any address
 		serverAddress.sin_port = htons(port);		// host to network short
 		adressLength = sizeof(serverAddress);		// set length of address
-
-		bindSocket();
-		listenSocket();
-		acceptSocket();
 	}
 
 	void createSocket()
@@ -186,8 +181,7 @@ void sendFile()
     file.close();
 
     // Close the socket
-    close(newSocketDescriptor);
-
+	//close(newSocketDescriptor);
     printf("Sent %d bytes (100.00%%)\n", totalBytesSent); // Print the final progress
 }
 
@@ -197,13 +191,15 @@ void sendFile()
 
 int main(int argc, char *argv[]) // probs remove those args
 {
+	printf("Starting server...\n");
+	ServerSocket server;
+	server.createSocket();
+	server.bindSocket();
 	while(1)
 	{
-		printf("Starting server...\n");
-		ServerSocket server;
+		server.listenSocket();
+		server.acceptSocket();
 		server.sendFile();
-		printf("Server will sleep and wait for port to update it's state to OPEN...\n");
-		sleep(90);
 	}
 	return 0;
 }
