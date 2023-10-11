@@ -79,48 +79,47 @@ public:
 
 	void acceptSocket()
 	{
-    	if ((newSocketDescriptor = accept(generalSocketDescriptor, (struct sockaddr *)&serverAddress, (socklen_t *)&adressLength)) < 0)
-    	{
-        	perror("Error: Socket not accepted");
-        	exit(1);
-    	}
-    	else
-    	{
-        	printf("Socket accepted\n");
-    	}
+		if ((newSocketDescriptor = accept(generalSocketDescriptor, (struct sockaddr *)&serverAddress, (socklen_t *)&adressLength)) < 0)
+		{
+			perror("Error: Socket not accepted");
+			exit(1);
+		}
+		else
+		{
+			printf("Socket accepted\n");
+		}
 
-    	char filenameBuffer[256]; // Adjust the buffer size as needed
-    	readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
-    	printf("Received filename: %s\n", filenameBuffer);
+		char filenameBuffer[256]; // Adjust the buffer size as needed
+		readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
+		printf("Received filename: %s\n", filenameBuffer);
 
-    	std::string filename(filenameBuffer);
+		std::string filename(filenameBuffer);
 
-    	// Now, you have the filename in the `filename` string.
-    
-    	// Open the corresponding file for sending based on the received filename.
-    	file.open(".//datatosend//" + filename, ios::in | ios::binary);
+		// Now, you have the filename in the `filename` string.
 
-    	if (!file.is_open())
-    	{
-        	perror("Error: File not opened");
+		// Open the corresponding file for sending based on the received filename.
+		file.open(".//datatosend//" + filename, ios::in | ios::binary);
+
+		if (!file.is_open())
+		{
+			perror("Error: File not opened");
 			char failed[256] = "Requested file does not exist";
-			//writeTextTCP(newSocketDescriptor, failed);
-        	exit(1);
+			// writeTextTCP(newSocketDescriptor, failed);
+			exit(1);
 			send(newSocketDescriptor, failed, sizeof(failed), 0);
-    	}
-    	else
-    	{
+		}
+		else
+		{
 			// attampt with iknlib :
 			char notfailed[256] = "shit good";
-			//writeTextTCP(newSocketDescriptor, notfailed);
+			// writeTextTCP(newSocketDescriptor, notfailed);
 			send(newSocketDescriptor, notfailed, sizeof(notfailed), 0);
-        	printf("File opened\n");
-    	}
-		//readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
+			printf("File opened\n");
+		}
+		// readTextTCP(newSocketDescriptor, filenameBuffer, sizeof(filenameBuffer));
 
 		sleep(0.29);
 	}
-
 
 	/* void acceptSocket() OG CODE
 	{
@@ -133,69 +132,66 @@ public:
 		{
 			printf("Socket accepted\n");
 		}
-	} */ 
+	} */
 
-void sendFile()
-{
-    // Calculate the size of the file
-    file.seekg(0, ios::end);
-    int fileSize = file.tellg();
-    file.seekg(0, ios::beg);
+	void sendFile()
+	{
+		// Calculate the size of the file
+		file.seekg(0, ios::end);
+		int fileSize = file.tellg();
+		file.seekg(0, ios::beg);
 
-    // Send the file size to the client
-    int fileSizeNetworkOrder = htonl(fileSize);
-    if (send(newSocketDescriptor, &fileSizeNetworkOrder, sizeof(fileSizeNetworkOrder), 0) < 0)
-    {
-        perror("Error: File size not sent");
-        exit(1);
-    }
+		// Send the file size to the client
+		int fileSizeNetworkOrder = htonl(fileSize);
+		if (send(newSocketDescriptor, &fileSizeNetworkOrder, sizeof(fileSizeNetworkOrder), 0) < 0)
+		{
+			perror("Error: File size not sent");
+			exit(1);
+		}
 
-    char buffer[1000]; // Buffer to read and send file in chunks
-    int totalBytesSent = 0;
-    int chunkNumber = 0;
-    int bytesInInterval = 0;
-    int bytesRead;
+		char buffer[1000]; // Buffer to read and send file in chunks
+		int totalBytesSent = 0;
+		int chunkNumber = 0;
+		int bytesInInterval = 0;
+		int bytesRead;
 
-    while ((bytesRead = file.read(buffer, sizeof(buffer)).gcount()) > 0)
-    {
-        // Send the chunk over the socket
-        if (send(newSocketDescriptor, buffer, bytesRead, 0) < 0)
-        {
-            perror("Error: File not sent");
-            exit(1);
-        }
+		while ((bytesRead = file.read(buffer, sizeof(buffer)).gcount()) > 0)
+		{
+			// Send the chunk over the socket
+			if (send(newSocketDescriptor, buffer, bytesRead, 0) < 0)
+			{
+				perror("Error: File not sent");
+				exit(1);
+			}
 
-        totalBytesSent += bytesRead;
-        chunkNumber++;
-        bytesInInterval += bytesRead;
+			totalBytesSent += bytesRead;
+			chunkNumber++;
+			bytesInInterval += bytesRead;
 
-        // Print progress every 1000 bytes
-        if (bytesInInterval >= 1000)
-        {
-            printf("Sent %d bytes (%.2f%%)\n", totalBytesSent, (static_cast<double>(totalBytesSent) / fileSize) * 100);
-            bytesInInterval = 0; // Reset the interval count
-        }
-    }
+			// Print progress every 1000 bytes
+			if (bytesInInterval >= 1000)
+			{
+				printf("Sent %d bytes (%.2f%%)\n", totalBytesSent, (static_cast<double>(totalBytesSent) / fileSize) * 100);
+				bytesInInterval = 0; // Reset the interval count
+			}
+		}
 
-    // Close the file
-    file.close();
+		// Close the file
+		file.close();
 
-    // Close the socket
-	//close(newSocketDescriptor);
-    printf("Sent %d bytes (100.00%%)\n", totalBytesSent); // Print the final progress
-}
-
-
+		// Close the socket
+		// close(newSocketDescriptor);
+		printf("Sent %d bytes (100.00%%)\n", totalBytesSent); // Print the final progress
+	}
 };
 
-
-int main(int argc, char *argv[]) // probs remove those args
+int main(int argc, char *argv[])
 {
 	printf("Starting server...\n");
 	ServerSocket server;
 	server.createSocket();
 	server.bindSocket();
-	while(1)
+	while (1)
 	{
 		server.listenSocket();
 		server.acceptSocket();
