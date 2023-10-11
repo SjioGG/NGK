@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     serverAddress.sin_port = htons(9000);
     inet_pton(AF_INET, serverIP, &serverAddress.sin_addr);
 
-    sendto(clientSocket, &command, 1, 0, (struct sockaddr *)&serverAddress, sizeof(serverAddress);
+    sendto(clientSocket, &command, 1, 0, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
 
     char response[1024];
     socklen_t serverAddressLength = sizeof(serverAddress);
