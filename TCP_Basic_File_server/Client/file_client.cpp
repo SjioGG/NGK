@@ -83,7 +83,7 @@ public:
 		printf("Connected to server!\n");
 	}
 
-    // void requestFileFromServer() THIS IS WITH C-IMPL, which brakes evertyhing
+    // void requestFileFromServer() // THIS IS WITH C-IMPL, which brakes evertyhing
 	// {
     // 	// Send the filename to the server as a request
     // 	writeTextTCP(generalSocketDescriptor, fileName.c_str());
@@ -92,7 +92,7 @@ public:
     // 	char response[256];
     // 	readTextTCP(generalSocketDescriptor, response, sizeof(response));
 	// 	// Check the response to see if the file is available
-	// 	char failed[256] = "Requested file does not exist";
+	 	char failed[256] = "Requested file does not exist";
     // 	if (strcmp(response, failed) == 0)
     // 	{
     //     	printf("File not available or unexpected response from server: %s\n", response);
@@ -105,10 +105,21 @@ public:
 	// 	//writeTextTCP(generalSocketDescriptor, fileName.c_str());
 	// }
 
-	void requestFileFromServer()
+	void requestFileFromServer() // Fix with send and recv, but problem with progress print
 	{
     	// Send the filename to the server as a request
     	writeTextTCP(generalSocketDescriptor, fileName.c_str());
+		char response[256];
+    	int bytesRead = recv(generalSocketDescriptor, response, sizeof(response), 0);
+		if (strcmp(response, failed) == 0)
+    	{
+        	printf("File not available or unexpected response from server: %s\n", response);
+        	exit(1);
+    	}
+		else
+		{
+			printf("File found!: %s\n", response);
+		}
 	}
 
 void receiveFile()
