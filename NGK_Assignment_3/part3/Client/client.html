@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Weather Data Manager</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .form-input {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Weather Data Manager</h1>
+    
+    <!-- Input fields for weather data -->
+    <form id="weatherForm">
+        <div class="form-input"><input type="number" id="id" placeholder="Id" /></div>
+        <div class="form-input"><input type="date" id="date" placeholder="Date" /></div>
+        <div class="form-input"><input type="text" id="time" placeholder="Time" /></div>
+        <div class="form-input"><input type="text" id="placeName" placeholder="Location" /></div>
+        <div class="form-input"><input type="number" id="lat" placeholder="Latitude" /></div>
+        <div class="form-input"><input type="number" id="long" placeholder="Longitude" /></div>
+        <div class="form-input"><input type="number" id="temperature" placeholder="Temperature" /></div>
+        <div class="form-input"><input type="number" id="humidity" placeholder="Humidity" /></div>
+    </form>
+
+    <!-- Buttons for CRUD operations -->
+    <button id="getButton">Get Weather Data</button>
+    <button id="postButton">Create Weather Data</button>
+    <button id="putButton">Update Weather Data</button>
+    <button id="getLatestButton">Get Latest Three Entries</button>
+    <input type="date" id="dateInput" placeholder="Enter Date">
+    <button id="getDateButton">Get Weather by Date</button>
+    <button id="clearTableButton">Clear Table</button>
+
+
+    <!-- Table to display weather data -->
+    <table id="weatherTable">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Location</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Temperature</th>
+                <th>Humidity</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- Weather data rows will go here -->
+        </tbody>
+    </table>
+
+    <script src="main.js"></script> <!-- Load the script at the end of the body for better page load performance -->
+</body>
+</html>
