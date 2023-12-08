@@ -66,6 +66,8 @@ struct weather_t
 
 using weather_data_t = std::vector<weather_t>;
 
+namespace rr = restinio::router;
+using router_t = rr::express_router_t<>;
 
 class weather_handler_t
 {
@@ -258,6 +260,17 @@ private:
 	weather_data_t &m_weather;
 
 	template <typename RESP>
+	static RESP init_resp(RESP resp) {
+    resp
+        .append_header("Server", "RESTinio sample server /v.0.6")
+        .append_header_date_field()
+        .append_header("Content-Type", "text/plain; charset=utf-8");
+
+    return resp;
+	}
+
+
+	template <typename RESP>
 	static void
 	mark_as_bad_request(RESP &resp)
 	{
@@ -318,7 +331,6 @@ auto server_handler(weather_data_t &weather_data)
 
 	// Handler for '/location/:location' path.
 	router->http_get("/date/:date", by(&weather_handler_t::on_date_get));
-	router->http_get("/chat", by(&weather_handler_t::on_live_update));
 
 	// Disable all other methods for '/location/:location'.
 	router->add_handler(
